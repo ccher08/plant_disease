@@ -3,26 +3,14 @@ import Image from 'next/image';
 import React, { useState, useRef } from 'react';
 
 // Custom Hook for Scroll Into View
-export function useInView(options?: IntersectionObserverInit) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [inView, setInView] = useState(false);
-
-  React.useEffect(() => {
-    if (!ref.current) return;
-    const observer = new window.IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      options
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [options]);
-
-  return [ref, inView] as const;
-}
+import { useInView } from '@/hooks/useInView';
 
 export default function Home() {
   const [result, setResult] = React.useState<{ prediction: string; confidence: number } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  
+  // Use the custom useInView hook for animation
+  const [featuresRef, featuresInView] = useInView({ threshold: 0.2 });
 
   // Handle file upload
   async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -151,9 +139,13 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="max-w-7xl mx-auto px-4 py-16">
-        <section id="features" className="max-w-7xl mx-auto px-4 py-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6"> Simak Cara Kerjanya</h1>
-          <div className="grid md:grid-cols-3 gap-8 slide-top">
+        <section id="features" className="max-w-7xl mx-auto px-4 py-16" ref={featuresRef}>
+          <h1 className={`text-4xl md:text-5xl font-bold text-white mb-6 transition-all duration-700 ${
+            featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}> Simak Cara Kerjanya</h1>
+          <div className={`grid md:grid-cols-3 gap-8 transition-all duration-700 delay-200 ${
+            featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}>
             {[
               {
                 image: "/images/photos-tutorial.png",
@@ -171,8 +163,10 @@ export default function Home() {
                 desc: "Mesin akan menampilkan hasil deteksi penyakit tanaman Anda!"
               }
             ].map((feature, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl border border-green-100 shadow-sm hover:shadow-md transition-shadow
-              relative overflow-visible">
+              <div key={index} className={`bg-white p-6 rounded-xl border border-green-100 shadow-sm hover:shadow-md transition-all duration-700
+              relative overflow-visible ${
+                featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`} style={{ transitionDelay: `${300 + index * 100}ms` }}>
                 <div className={
                   "absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-40 z-10 " + 
                   (index === 0 ? "-translate-x-16" : "")}>
@@ -185,7 +179,7 @@ export default function Home() {
                         className="object-contain drop-shadow-lg group-hover:scale-105 transition-transform duration-300"
                         />
                     ) : (
-                      feature.image
+                      feature.icon
                     )}
                   </div>
                 </div>
@@ -211,23 +205,15 @@ function LeafIcon(props: React.SVGProps<SVGSVGElement>) {
 
 function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19 13v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5M12 4v12m-4-4l4 4 4-4"/>
-    </svg>
-  );
-}
-
-function SpeedIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M13 12l3-3m-6 6l4 4m5-11a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
     </svg>
   );
 }
 
 function AccuracyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
+    <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
   );
@@ -235,7 +221,7 @@ function AccuracyIcon(props: React.SVGProps<SVGSVGElement>) {
 
 function SolutionIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
+    <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
     </svg>
   );
