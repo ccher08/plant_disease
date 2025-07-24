@@ -15,7 +15,9 @@ app = FastAPI()
 # Allow CORS from frontend (localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # specify your frontend URL
+    allow_origins=[
+    "http://localhost:3000",
+    "https://leaf-guard-error404.vercel.app/"],  # URL deploy frontend
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
